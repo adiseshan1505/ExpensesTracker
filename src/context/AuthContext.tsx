@@ -8,6 +8,7 @@ type AuthContextType = {
     userToken: string | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<{ success: boolean; requires2FA?: boolean; message?: string }>;
+    register: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
     verifyOtp: (email: string, otp: string) => Promise<boolean>;
     logout: () => Promise<void>;
     unlockWithBiometric: () => Promise<boolean>;
@@ -25,6 +26,7 @@ export const AuthContext = createContext<AuthContextType>({
     userToken: null,
     loading: true,
     login: async () => ({ success: false }),
+    register: async () => ({ success: false }),
     verifyOtp: async () => false,
     logout: async () => { },
     unlockWithBiometric: async () => false,
@@ -74,12 +76,54 @@ export const AuthProvider = ({ children }: any) => {
     const tryBiometricUnlock = async () => {
         const hasHardware = await LocalAuthentication.hasHardwareAsync();
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        if (!hasHardware || !isEnrolled) return true;
+
+        // If biometric is enabled but hardware/enrollment is missing, 
+        // we should probably fail securely (return false) or fallback.
+        // Returning true here bypasses security if hardware fails.
+        // Let's return false to force manual login if biometrics are expected but missing.
+        if (!hasHardware || !isEnrolled) return false;
 
         const result = await LocalAuthentication.authenticateAsync({
             promptMessage: "Authenticate to continue",
+            fallbackLabel: "Use Passcode",
         });
         return result.success;
+    };
+
+    const toggleBiometric = async () => {
+        if (!isBiometricEnabled) {
+            // Check if supported before enabling
+            const hasHardware = await LocalAuthentication.hasHardwareAsync();
+            const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+            if (!hasHardware || !isEnrolled) {
+                alert("Biometrics not supported or not enrolled on this device.");
+                return;
+            }
+        }
+
+        const newState = !isBiometricEnabled;
+        setIsBiometricEnabled(newState);
+        await SecureStore.setItemAsync("biometric_enabled", newState ? "true" : "false");
+    };
+
+    const register = async (email: string, password: string) => {
+        try {
+            const res = await fetch(`${API_URL}/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                return { success: true, message: data.message };
+            } else {
+                return { success: false, message: data.error || "Registration failed" };
+            }
+        } catch {
+            return { success: false, message: "Network error" };
+        }
     };
 
     const login = async (email: string, password: string) => {
@@ -101,10 +145,6 @@ export const AuthProvider = ({ children }: any) => {
             setUserToken(data.token);
             if (data.user?.isTwoFactorEnabled) setIsTwoFactorEnabled(true);
             fetchExpensesInternal(data.token);
-
-            // Set biometric default to false on first login if not set, or keep existing
-            // const currentBio = await SecureStore.getItemAsync("biometric_enabled");
-            // if (currentBio === null) await SecureStore.setItemAsync("biometric_enabled", "false");
 
             return { success: true };
         } catch (error) {
@@ -144,12 +184,6 @@ export const AuthProvider = ({ children }: any) => {
             promptMessage: "Unlock Secure Expense Tracker",
         });
         return result.success;
-    };
-
-    const toggleBiometric = async () => {
-        const newState = !isBiometricEnabled;
-        setIsBiometricEnabled(newState);
-        await SecureStore.setItemAsync("biometric_enabled", newState ? "true" : "false");
     };
 
     const toggleTwoFactor = async () => {
@@ -232,6 +266,7 @@ export const AuthProvider = ({ children }: any) => {
                 userToken,
                 loading,
                 login,
+                register,
                 verifyOtp,
                 logout,
                 unlockWithBiometric,

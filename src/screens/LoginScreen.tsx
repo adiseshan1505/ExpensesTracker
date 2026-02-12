@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 
 const { width } = Dimensions.get("window");
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: any) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [otp, setOtp] = useState("");
@@ -111,7 +111,7 @@ export default function LoginScreen() {
                             <Text style={styles.buttonText}>Login</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate("Register")}>
                             <Text style={styles.link}>Create new account</Text>
                         </TouchableOpacity>
                     </>

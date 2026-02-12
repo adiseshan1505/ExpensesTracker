@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../models/User";
 import { registerSchema, loginSchema } from "../schema/authSchema";
+import { sendEmail } from "../utils/sendEmail";
 
 export const register = async (req: any, res: any) => {
     try {
@@ -40,8 +41,12 @@ export const login = async (req: any, res: any) => {
             user.otpExpires = new Date(Date.now() + 10 * 60000); // 10 mins
             await user.save();
 
-            // In a real app, send email here
-            console.log(`OTP for ${user.email}: ${otp}`);
+            try {
+                await sendEmail(user.email, "Your OTP Code", `Your verification code is: ${otp}`);
+            } catch (emailError) {
+                console.error("Failed to send email:", emailError);
+                return res.status(500).json({ error: "Failed to send OTP email" });
+            }
 
             return res.json({
                 twoFactorRequired: true,
