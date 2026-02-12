@@ -1,9 +1,16 @@
-import React, { useRef, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Dimensions } from "react-native";
+import React, { useRef, useEffect, useState, useContext } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Dimensions, Alert } from "react-native";
+import { AuthContext } from "../context/AuthContext";
 
 const { width } = Dimensions.get("window");
 
 export default function LoginScreen() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [otp, setOtp] = useState("");
+    const [requires2FA, setRequires2FA] = useState(false);
+    const { login, verifyOtp } = useContext(AuthContext);
+
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(40)).current;
 
@@ -22,6 +29,33 @@ export default function LoginScreen() {
         ]).start();
     }, []);
 
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert("Missing fields", "Enter email and password");
+            return;
+        }
+
+        const res = await login(email, password);
+
+        if (res.success && res.requires2FA) {
+            setRequires2FA(true);
+            Alert.alert("2FA Required", res.message || "OTP sent to email");
+        } else if (!res.success) {
+            Alert.alert("Login Failed", res.message || "Invalid credentials");
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otp) {
+            Alert.alert("Missing OTP", "Enter the OTP sent to your email");
+            return;
+        }
+        const success = await verifyOtp(email, otp);
+        if (!success) {
+            Alert.alert("Verification Failed", "Invalid OTP");
+        }
+    };
+
     return (
         <View style={styles.container}>
             <Animated.View
@@ -33,29 +67,55 @@ export default function LoginScreen() {
                     },
                 ]}
             >
-                <Text style={styles.title}>Welcome Back</Text>
-                <Text style={styles.subtitle}>Login to continue</Text>
+                <Text style={styles.title}>{requires2FA ? "Verify OTP" : "Welcome Back"}</Text>
+                <Text style={styles.subtitle}>{requires2FA ? "Enter code sent to email" : "Login to continue"}</Text>
 
-                <TextInput
-                    placeholder="Email"
-                    placeholderTextColor="#777"
-                    style={styles.input}
-                />
+                {requires2FA ? (
+                    <>
+                        <TextInput
+                            placeholder="Enter OTP"
+                            placeholderTextColor="#777"
+                            style={styles.input}
+                            keyboardType="number-pad"
+                            value={otp}
+                            onChangeText={setOtp}
+                        />
+                        <TouchableOpacity style={styles.button} onPress={handleVerifyOtp}>
+                            <Text style={styles.buttonText}>Verify OTP</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setRequires2FA(false)}>
+                            <Text style={styles.link}>Back to Login</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        <TextInput
+                            placeholder="Email"
+                            placeholderTextColor="#777"
+                            style={styles.input}
+                            autoCapitalize="none"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
 
-                <TextInput
-                    placeholder="Password"
-                    placeholderTextColor="#777"
-                    secureTextEntry
-                    style={styles.input}
-                />
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor="#777"
+                            secureTextEntry
+                            style={styles.input}
+                            value={password}
+                            onChangeText={setPassword}
+                        />
 
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                            <Text style={styles.buttonText}>Login</Text>
+                        </TouchableOpacity>
 
-                <TouchableOpacity>
-                    <Text style={styles.link}>Create new account</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Text style={styles.link}>Create new account</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
             </Animated.View>
         </View>
     );
