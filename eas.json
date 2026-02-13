@@ -17,8 +17,11 @@
             }
         },
         "production": {
+            "android": {
+                "buildType": "apk"
+            },
             "env": {
-                "EXPO_PUBLIC_API_URL": "YOUR_PRODUCTION_API_URL_HERE"
+                "EXPO_PUBLIC_API_URL": "https://expensestracker-1otp.onrender.com"
             }
         }
     },
