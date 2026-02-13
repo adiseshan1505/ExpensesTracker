@@ -25,7 +25,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -42,6 +43,11 @@
           "cameraPermission": "The app accesses your camera to let you take a profile picture."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1544c219-6371-4eaf-9073-a653094cdc78"
+      }
+    }
   }
 }
