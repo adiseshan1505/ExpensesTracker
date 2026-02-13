@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = async (email: string, subject: string, text: string) => {
+export const sendEmail = async (email: string, subject: string, text: string, html?: string) => {
     try {
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
@@ -17,6 +17,7 @@ export const sendEmail = async (email: string, subject: string, text: string) =>
             to: email,
             subject: subject,
             text: text,
+            html: html,
         });
 
         console.log("Email sent successfully");

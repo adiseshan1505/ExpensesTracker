@@ -9,6 +9,7 @@ export default function LoginScreen({ navigation }: any) {
     const [password, setPassword] = useState("");
     const [otp, setOtp] = useState("");
     const [requires2FA, setRequires2FA] = useState(false);
+    const [timer, setTimer] = useState(0);
     const { login, verifyOtp } = useContext(AuthContext);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -29,6 +30,16 @@ export default function LoginScreen({ navigation }: any) {
         ]).start();
     }, []);
 
+    useEffect(() => {
+        let interval: any;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
+
     const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert("Missing fields", "Enter email and password");
@@ -39,6 +50,7 @@ export default function LoginScreen({ navigation }: any) {
 
         if (res.success && res.requires2FA) {
             setRequires2FA(true);
+            setTimer(20);
             Alert.alert("2FA Required", res.message || "OTP sent to email");
         } else if (!res.success) {
             Alert.alert("Login Failed", res.message || "Invalid credentials");
@@ -53,6 +65,16 @@ export default function LoginScreen({ navigation }: any) {
         const success = await verifyOtp(email, otp);
         if (!success) {
             Alert.alert("Verification Failed", "Invalid OTP");
+        }
+    };
+
+    const handleResendOtp = async () => {
+        setTimer(20);
+        const res = await login(email, password);
+        if (res.success) {
+            Alert.alert("OTP Resent", "Check your email for the new code");
+        } else {
+            Alert.alert("Error", res.message || "Failed to resend OTP");
         }
     };
 
@@ -83,6 +105,15 @@ export default function LoginScreen({ navigation }: any) {
                         <TouchableOpacity style={styles.button} onPress={handleVerifyOtp}>
                             <Text style={styles.buttonText}>Verify OTP</Text>
                         </TouchableOpacity>
+
+                        {timer > 0 ? (
+                            <Text style={styles.timerText}>Resend OTP in {timer}s</Text>
+                        ) : (
+                            <TouchableOpacity onPress={handleResendOtp}>
+                                <Text style={styles.link}>Resend OTP</Text>
+                            </TouchableOpacity>
+                        )}
+
                         <TouchableOpacity onPress={() => setRequires2FA(false)}>
                             <Text style={styles.link}>Back to Login</Text>
                         </TouchableOpacity>
@@ -168,5 +199,11 @@ const styles = StyleSheet.create({
         color: "#5B8CFF",
         textAlign: "center",
         marginTop: 6,
+    },
+    timerText: {
+        color: "#888",
+        textAlign: "center",
+        marginTop: 10,
+        fontSize: 14,
     },
 });

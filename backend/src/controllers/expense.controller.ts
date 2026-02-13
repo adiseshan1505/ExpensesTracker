@@ -12,6 +12,13 @@ export const getExpenses = async (req: any, res: any) => {
 export const createExpense = async (req: any, res: any) => {
     try {
         const { title, amount, category, description, date } = req.body;
+
+        if (!title || typeof title !== 'string' || title.trim() === '') {
+            throw new Error("Title is required");
+        }
+        if (!amount || isNaN(amount) || amount <= 0) {
+            throw new Error("Amount must be a positive number");
+        }
         const newExpense = await ExpenseModel.create({
             user: req.user.id,
             title,

@@ -10,6 +10,7 @@ export default function RegisterScreen({ navigation }: any) {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(40)).current;
 
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,7 +31,7 @@ export default function RegisterScreen({ navigation }: any) {
     }, []);
 
     const handleRegister = async () => {
-        if (!email || !password || !confirmPassword) {
+        if (!name || !email || !password || !confirmPassword) {
             Alert.alert("Missing fields", "Please fill all fields");
             return;
         }
@@ -40,7 +41,7 @@ export default function RegisterScreen({ navigation }: any) {
             return;
         }
 
-        const res = await register(email, password);
+        const res = await register(name, email, password);
 
         if (res.success) {
             Alert.alert("Success", "Account created! Please login.");
@@ -52,6 +53,10 @@ export default function RegisterScreen({ navigation }: any) {
 
     return (
         <View style={styles.container}>
+            <View style={styles.headerContainer}>
+                <Text style={styles.appTitle}>Welcome to Secure Paisa Tracker</Text>
+                <Text style={styles.appMotto}>All your expenses are safe!!!</Text>
+            </View>
             <Animated.View
                 style={[
                     styles.card,
@@ -63,6 +68,14 @@ export default function RegisterScreen({ navigation }: any) {
             >
                 <Text style={styles.title}>Create Account</Text>
                 <Text style={styles.subtitle}>Sign up to get started</Text>
+
+                <TextInput
+                    placeholder="Name"
+                    placeholderTextColor="#777"
+                    style={styles.input}
+                    value={name}
+                    onChangeText={setName}
+                />
 
                 <TextInput
                     placeholder="Email"
@@ -109,6 +122,22 @@ const styles = StyleSheet.create({
         backgroundColor: "#0F1115",
         alignItems: "center",
         justifyContent: "center",
+    },
+    headerContainer: {
+        alignItems: "center",
+        marginBottom: 30,
+    },
+    appTitle: {
+        color: "#5B8CFF",
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: 8,
+    },
+    appMotto: {
+        color: "#888",
+        fontSize: 16,
+        fontStyle: "italic",
     },
     card: {
         width: width * 0.9,
