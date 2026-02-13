@@ -10,11 +10,10 @@ Built using **Expo + React Native + TypeScript** with a clean scalable architect
 - Clean project architecture (`src/navigation`, `src/screens`, `src/context`)
 - Custom authentication system (no third-party auth providers)
 - Secure token storage using Expo SecureStore
-- Upcoming are below...
 - User registration & login flow
 - Expense management
 - Categories & analytics
-- PIN / biometric lock (planned)
+- OTP Pin using SMTP for 2FA
 
 ## Tech Stack
 
