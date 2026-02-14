@@ -39,12 +39,9 @@ export const login = async (req: any, res: any) => {
         if (user.isTwoFactorEnabled) {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
             user.otp = otp;
-            user.otpExpires = new Date(Date.now() + 20 * 1000);
+            user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
             await user.save();
-
-            try {
-                // strict user requirement for message content
-                const emailHtml = `
+            const emailHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -82,12 +79,18 @@ export const login = async (req: any, res: any) => {
 </body>
 </html>
 `;
-                await sendEmail(user.email, "Your OTP Code", `your otp for secure paisa tracker is ${otp}`, emailHtml);
-            } catch (emailError) {
-                console.error("Failed to send email:", emailError);
-                return res.status(500).json({ error: "Failed to send OTP email" });
-            }
+            // Non-blocking email send - using setImmediate to guarantee it doesn't block the response
+            console.log(`[${new Date().toISOString()}] Prepare to send email to ${user.email}`);
+            setImmediate(() => {
+                console.log(`[${new Date().toISOString()}] sending email now...`);
+                sendEmail(user.email, "Your OTP Code", `your otp for secure paisa tracker is ${otp}`, emailHtml).then(() => {
+                    console.log(`[${new Date().toISOString()}] Email sent successfully`);
+                }).catch(err => {
+                    console.error(`[${new Date().toISOString()}] Failed to send email in background:`, err);
+                });
+            });
 
+            console.log(`[${new Date().toISOString()}] Sending response to client immediately`);
             return res.json({
                 twoFactorRequired: true,
                 message: "OTP sent to your email"
