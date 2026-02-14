@@ -28,7 +28,7 @@ Built using **React Native (Expo)** for the frontend and **Node.js (Express) + M
 - **Node.js** & **Express**
 - **MongoDB** (Database)
 - **Mongoose** (ODM)
-- **Nodemailer** (SMTP Email)
+- **Resend** (Email API)
 - **JWT** (Authentication)
 
 ## Project Structure
@@ -64,12 +64,13 @@ Create a `.env` file in `backend/` with the following variables:
 PORT=5000
 MONGO_URL=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-SMTP_FROM=your_email@gmail.com
+
+# Resend Email (Works on Render free tier!)
+RESEND_API_KEY=re_your_resend_api_key
+RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
+
+**📧 Email Setup**: See [RESEND_SETUP.md](./RESEND_SETUP.md) for detailed Resend configuration (takes 5 minutes!).
 
 Start the backend server:
 ```bash
@@ -105,5 +106,9 @@ Updates are managed via EAS Update or new builds.
 
 ## Troubleshooting
 
-- **Login Lag**: If login feels slow, ensure the backend SMTP settings are correct. The system is designed to send emails asynchronously to prevent UI blocking.
+- **Email Not Sending**: 
+  - **On Render**: Render blocks SMTP ports on free tier. Use Resend API instead (see [RESEND_SETUP.md](./RESEND_SETUP.md))
+  - **Locally**: Verify `RESEND_API_KEY` is set correctly (starts with `re_`)
+  - Check Render logs for `[EMAIL]` prefixed messages
+- **Login Lag**: If login feels slow, ensure the backend email settings are correct. The system sends emails asynchronously to prevent UI blocking.
 - **Network Errors**: Ensure your mobile device and backend (if running locally) are on the same network, or use a tunneling service like Ngrok.
