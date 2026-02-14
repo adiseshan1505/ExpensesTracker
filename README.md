@@ -4,6 +4,12 @@ A full-stack mobile application for privacy-first personal expense tracking, fea
 
 Built using **React Native (Expo)** for the frontend and **Node.js (Express) + MongoDB** for the backend.
 
+## 🚀 Live Demo
+
+- **Backend API:** [https://expensestracker.onrender.com](https://expensestracker.onrender.com)
+- **Status:** ✅ Production-ready
+- **Features:** JWT Auth, Email OTP (Resend), MongoDB, Auto-deploy
+
 ## Features
 
 - **Secure Authentication**: Custom JWT-based auth with email OTP for 2FA.
@@ -19,23 +25,23 @@ Built using **React Native (Expo)** for the frontend and **Node.js (Express) + M
 ## Tech Stack
 
 ### Frontend
-- **React Native** (Expo SDK)
+- **React Native** 
 - **TypeScript**
 - **React Navigation**
-- **Expo SecureStore** (Token storage)
+- **Expo SecureStore**
 
 ### Backend
 - **Node.js** & **Express**
-- **MongoDB** (Database)
-- **Mongoose** (ODM)
-- **Resend** (Email API)
-- **JWT** (Authentication)
+- **MongoDB** 
+- **Mongoose**
+- **Resend** 
+- **JWT** 
 
 ## Project Structure
 
 ```bash
 ExpenseTracker/
-├── backend/            # Express API Server
+├── backend/            
 │   ├── src/
 │   │   ├── controllers/
 │   │   ├── models/
@@ -70,7 +76,7 @@ RESEND_API_KEY=re_your_resend_api_key
 RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
 
-**📧 Email Setup**: See [RESEND_SETUP.md](./RESEND_SETUP.md) for detailed Resend configuration (takes 5 minutes!).
+
 
 Start the backend server:
 ```bash
@@ -94,8 +100,9 @@ Use the Expo Go app on your phone to scan the QR code and run the app.
 
 ### Backend (Render)
 The backend is deployed on Render with auto-deploy enabled.
-- **Live URL:** Your Render service URL
+- **Live URL:** https://expensestracker.onrender.com
 - **Environment variables** must be set in Render dashboard
+- **Status:** Production-ready with Resend email integration
 - Auto-deploys on push to `main` branch
 
 ### Mobile App (EAS Build)
@@ -114,21 +121,9 @@ eas build --platform android --profile production
 eas build --platform android --profile preview
 ```
 
-#### Google Play Store Deployment
-See **[PLAYSTORE_DEPLOYMENT.md](./PLAYSTORE_DEPLOYMENT.md)** for complete step-by-step guide including:
-- Google Play Developer account setup
-- App store listing creation
-- Privacy policy requirements
-- Content rating and data safety
-- Submission and review process
 
-Updates are managed via EAS Update or new builds.
-
-## Troubleshooting
-
-- **Email Not Sending**: 
-  - **On Render**: Render blocks SMTP ports on free tier. Use Resend API instead (see [RESEND_SETUP.md](./RESEND_SETUP.md))
-  - **Locally**: Verify `RESEND_API_KEY` is set correctly (starts with `re_`)
-  - Check Render logs for `[EMAIL]` prefixed messages
-- **Login Lag**: If login feels slow, ensure the backend email settings are correct. The system sends emails asynchronously to prevent UI blocking.
-- **Network Errors**: Ensure your mobile device and backend (if running locally) are on the same network, or use a tunneling service like Ngrok.
+#### Upcoming Updates:- 
+- Uploading app on playstore
+= Notifications enabled
+- Biometrics Fingerprint and Face
+- Better UI
