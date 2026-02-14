@@ -330,7 +330,7 @@ export default function HomeScreen() {
                 </View>
             </Modal>
 
-            {/* Profile Modal */}
+            { }
             <Modal
                 animationType="slide"
                 transparent={true}

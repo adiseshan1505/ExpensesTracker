@@ -79,7 +79,6 @@ export const login = async (req: any, res: any) => {
 </body>
 </html>
 `;
-            // Non-blocking email send - using setImmediate to guarantee it doesn't block the response
             console.log(`[${new Date().toISOString()}] Prepare to send email to ${user.email}`);
             setImmediate(() => {
                 console.log(`[${new Date().toISOString()}] sending email now...`);

@@ -93,15 +93,35 @@ Use the Expo Go app on your phone to scan the QR code and run the app.
 ## Deployment
 
 ### Backend (Render)
-The backend is configured for deployment on Render (or similar platforms).
-- Ensure all environment variables are set in the dashboard.
-- The repository is set to auto-deploy on push to `main`.
+The backend is deployed on Render with auto-deploy enabled.
+- **Live URL:** Your Render service URL
+- **Environment variables** must be set in Render dashboard
+- Auto-deploys on push to `main` branch
 
 ### Mobile App (EAS Build)
-To build the Android/iOS binary:
+
+#### Development Build
 ```bash
-eas build --platform android --profile production
+npx expo start
 ```
+
+#### Production Build (APK/AAB)
+```bash
+# Build Android App Bundle for Play Store
+eas build --platform android --profile production
+
+# Build APK for direct distribution
+eas build --platform android --profile preview
+```
+
+#### Google Play Store Deployment
+See **[PLAYSTORE_DEPLOYMENT.md](./PLAYSTORE_DEPLOYMENT.md)** for complete step-by-step guide including:
+- Google Play Developer account setup
+- App store listing creation
+- Privacy policy requirements
+- Content rating and data safety
+- Submission and review process
+
 Updates are managed via EAS Update or new builds.
 
 ## Troubleshooting

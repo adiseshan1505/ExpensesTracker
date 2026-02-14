@@ -33,7 +33,7 @@ export default function HistoryScreen() {
         for (const expense of sortedAsc) {
             runningSpent += (expense.amount || 0);
             const dateObj = new Date(expense.date || expense.createdAt);
-            const dateKey = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+            const dateKey = dateObj.toISOString().split('T')[0];
 
             if (!groups[dateKey]) {
                 groups[dateKey] = {
@@ -45,7 +45,7 @@ export default function HistoryScreen() {
             }
             groups[dateKey].items.push(expense);
             groups[dateKey].total += expense.amount;
-            groups[dateKey].balance = budget - runningSpent; // Balance after this transaction (or day)
+            groups[dateKey].balance = budget - runningSpent;
         }
 
         const groupArray = Object.values(groups).sort((a, b) => {

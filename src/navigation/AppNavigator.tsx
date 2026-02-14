@@ -23,8 +23,8 @@ function MainTabNavigator() {
                 tabBarStyle: {
                     backgroundColor: isDark ? "#171A21" : "#ffffff",
                     borderTopColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-                    height: 80, // Increased height
-                    paddingBottom: 20, // Added padding for home button area
+                    height: 80,
+                    paddingBottom: 20,
                     paddingTop: 8,
                     elevation: 10,
                     shadowColor: "#000",

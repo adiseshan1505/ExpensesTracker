@@ -6,7 +6,7 @@ const initializeResend = () => {
     const apiKey = process.env.RESEND_API_KEY;
 
     if (!apiKey) {
-        console.error("[EMAIL] ⚠️  RESEND_API_KEY not set in environment variables");
+        console.error("[EMAIL]   RESEND_API_KEY not set in environment variables");
         return null;
     }
 

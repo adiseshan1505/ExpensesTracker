@@ -4,7 +4,7 @@ import { protect } from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.use(protect); 
+router.use(protect);
 
 router.route("/")
     .get(getExpenses)
