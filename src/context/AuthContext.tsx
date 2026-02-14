@@ -1,16 +1,16 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, useRef } from "react";
 import * as SecureStore from "expo-secure-store";
+import { AppState } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://10.12.215.255:5000";
 
 type AuthContextType = {
     userToken: string | null;
     loading: boolean;
-    login: (email: string, password: string) => Promise<{ success: boolean; requires2FA?: boolean; message?: string }>;
+    login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; requires2FA?: boolean; message?: string }>;
     register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-    verifyOtp: (email: string, otp: string) => Promise<boolean>;
+    verifyOtp: (email: string, otp: string, rememberMe?: boolean) => Promise<boolean>;
     logout: () => Promise<void>;
-
     toggleTwoFactor: () => Promise<void>;
     isTwoFactorEnabled: boolean;
     expenses: any[];
@@ -33,7 +33,6 @@ export const AuthContext = createContext<AuthContextType>({
     register: async () => ({ success: false }),
     verifyOtp: async () => false,
     logout: async () => { },
-
     toggleTwoFactor: async () => { },
     isTwoFactorEnabled: false,
     expenses: [],
@@ -52,13 +51,14 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: any) => {
     const [userToken, setUserToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-
     const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
     const [budget, setBudget] = useState(0);
     const [expenses, setExpenses] = useState<any[]>([]);
     const [userName, setUserName] = useState<string | null>(null);
     const [profilePicture, setProfilePicture] = useState<string | null>(null);
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const lastActivity = useRef<number>(Date.now());
+    const inactivityTimeout = 15 * 60 * 1000;
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -66,7 +66,20 @@ export const AuthProvider = ({ children }: any) => {
 
     useEffect(() => {
         bootstrapAuth();
-    }, []);
+        const subscription = AppState.addEventListener("change", nextAppState => {
+            if (nextAppState === "active") {
+                const now = Date.now();
+                if (userToken && now - lastActivity.current > inactivityTimeout) {
+                    logout();
+                } else {
+                    lastActivity.current = now;
+                }
+            }
+        });
+        return () => {
+            subscription.remove();
+        };
+    }, [userToken]);
 
     const logout = async () => {
         await SecureStore.deleteItemAsync("token");
@@ -74,9 +87,15 @@ export const AuthProvider = ({ children }: any) => {
         setExpenses([]);
     };
 
-    // Helper for centralized error handling and logout
     const authorizedFetch = async (url: string, options: any = {}) => {
         try {
+            const now = Date.now();
+            if (now - lastActivity.current > inactivityTimeout) {
+                await logout();
+                return null;
+            }
+            lastActivity.current = now;
+
             const res = await fetch(url, options);
             if (res.status === 401) {
                 await logout();
@@ -84,7 +103,6 @@ export const AuthProvider = ({ children }: any) => {
             }
             return res;
         } catch (error) {
-            alert("Network Error: Please check your internet connection.");
             return null;
         }
     };
@@ -99,7 +117,6 @@ export const AuthProvider = ({ children }: any) => {
             const data = await res.json();
             if (Array.isArray(data)) setExpenses(data);
         } catch (e) {
-            console.error("Failed to fetch expenses", e);
         }
     };
 
@@ -121,13 +138,14 @@ export const AuthProvider = ({ children }: any) => {
     };
 
     const bootstrapAuth = async () => {
-        const token = await SecureStore.getItemAsync("token");
-        // Auto-login disabled as per request
-        // if (token) {
-        //     setUserToken(token);
-        //     fetchExpensesInternal(token);
-        //     fetchUserData(token);
-        // }
+        try {
+            const token = await SecureStore.getItemAsync("token");
+            if (token) {
+                setUserToken(token);
+                fetchExpensesInternal(token);
+                fetchUserData(token);
+            }
+        } catch { }
         setLoading(false);
     };
 
@@ -150,7 +168,7 @@ export const AuthProvider = ({ children }: any) => {
         }
     };
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string, rememberMe = true) => {
         try {
             const res = await fetch(`${API_URL}/login`, {
                 method: "POST",
@@ -165,13 +183,16 @@ export const AuthProvider = ({ children }: any) => {
 
             if (!data.token) return { success: false, message: data.error || "Login failed" };
 
-            await SecureStore.setItemAsync("token", data.token);
+            if (rememberMe) {
+                await SecureStore.setItemAsync("token", data.token);
+            }
             setUserToken(data.token);
             if (data.user?.isTwoFactorEnabled) setIsTwoFactorEnabled(true);
             if (data.user?.budget) setBudget(data.user.budget);
             if (data.user?.name) setUserName(data.user.name);
             if (data.user?.profilePicture) setProfilePicture(data.user.profilePicture);
             fetchExpensesInternal(data.token);
+            lastActivity.current = Date.now();
 
             return { success: true };
         } catch (error) {
@@ -179,7 +200,7 @@ export const AuthProvider = ({ children }: any) => {
         }
     };
 
-    const verifyOtp = async (email: string, otp: string) => {
+    const verifyOtp = async (email: string, otp: string, rememberMe = true) => {
         try {
             const res = await fetch(`${API_URL}/verify-otp`, {
                 method: "POST",
@@ -190,13 +211,16 @@ export const AuthProvider = ({ children }: any) => {
 
             if (!data.token) return false;
 
-            await SecureStore.setItemAsync("token", data.token);
+            if (rememberMe) {
+                await SecureStore.setItemAsync("token", data.token);
+            }
             setUserToken(data.token);
             if (data.user?.isTwoFactorEnabled) setIsTwoFactorEnabled(true);
             if (data.user?.budget) setBudget(data.user.budget);
             if (data.user?.name) setUserName(data.user.name);
             if (data.user?.profilePicture) setProfilePicture(data.user.profilePicture);
             fetchExpensesInternal(data.token);
+            lastActivity.current = Date.now();
             return true;
         } catch {
             return false;
@@ -314,7 +338,6 @@ export const AuthProvider = ({ children }: any) => {
                 register,
                 verifyOtp,
                 logout,
-
                 toggleTwoFactor,
                 isTwoFactorEnabled,
                 expenses,

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Dimensions, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../context/AuthContext";
 
 const { width } = Dimensions.get("window");
@@ -10,6 +11,7 @@ export default function LoginScreen({ navigation }: any) {
     const [otp, setOtp] = useState("");
     const [requires2FA, setRequires2FA] = useState(false);
     const [timer, setTimer] = useState(0);
+    const [rememberMe, setRememberMe] = useState(true);
     const { login, verifyOtp } = useContext(AuthContext);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -46,7 +48,7 @@ export default function LoginScreen({ navigation }: any) {
             return;
         }
 
-        const res = await login(email, password);
+        const res = await login(email, password, rememberMe);
 
         if (res.success && res.requires2FA) {
             setRequires2FA(true);
@@ -62,7 +64,7 @@ export default function LoginScreen({ navigation }: any) {
             Alert.alert("Missing OTP", "Enter the OTP sent to your email");
             return;
         }
-        const success = await verifyOtp(email, otp);
+        const success = await verifyOtp(email, otp, rememberMe);
         if (!success) {
             Alert.alert("Verification Failed", "Invalid OTP");
         }
@@ -70,7 +72,7 @@ export default function LoginScreen({ navigation }: any) {
 
     const handleResendOtp = async () => {
         setTimer(20);
-        const res = await login(email, password);
+        const res = await login(email, password, rememberMe);
         if (res.success) {
             Alert.alert("OTP Resent", "Check your email for the new code");
         } else {
@@ -138,6 +140,18 @@ export default function LoginScreen({ navigation }: any) {
                             onChangeText={setPassword}
                         />
 
+                        <TouchableOpacity
+                            style={styles.checkboxContainer}
+                            onPress={() => setRememberMe(!rememberMe)}
+                        >
+                            <Ionicons
+                                name={rememberMe ? "checkbox" : "square-outline"}
+                                size={24}
+                                color="#5B8CFF"
+                            />
+                            <Text style={styles.checkboxText}>Remember Me</Text>
+                        </TouchableOpacity>
+
                         <TouchableOpacity style={styles.button} onPress={handleLogin}>
                             <Text style={styles.buttonText}>Login</Text>
                         </TouchableOpacity>
@@ -181,6 +195,16 @@ const styles = StyleSheet.create({
         padding: 14,
         color: "white",
         marginBottom: 14,
+    },
+    checkboxContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 14,
+    },
+    checkboxText: {
+        color: "#ccc",
+        marginLeft: 8,
+        fontSize: 14,
     },
     button: {
         backgroundColor: "#5B8CFF",
