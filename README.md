@@ -40,13 +40,13 @@ ExpenseTracker/
 │   │   ├── controllers/
 │   │   ├── models/
 │   │   ├── routes/
-│   │   └── utils/      # Email service & helpers
-├── src/                # React Native App Code
-│   ├── context/        # State Management (AuthContext)
-│   ├── navigation/     # App Navigation
-│   └── screens/        # UI Screens
-├── app.json            # Expo Configuration
-└── eas.json            # EAS Build Configuration
+│   │   └── utils/      
+├── src/                
+│   ├── context/        
+│   ├── navigation/    
+│   └── screens/        
+├── app.json            
+└── eas.json       
 ```
 
 ## Getting Started

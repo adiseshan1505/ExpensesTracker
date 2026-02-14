@@ -41,5 +41,6 @@ export const sendEmail = async (email: string, subject: string, text: string, ht
         // For now, logging effectively shows the error.
         // Ensure we clear the transporter if it's potentially broken (e.g. auth failed), 
         // though usually nodemailer handles connection errors.
+        transporter = null;
     }
 };
